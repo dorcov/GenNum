@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phone Number Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>Generate Phone Number Variations</h1>
+    <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="variations">Variations per Number:</label>
+            <input type="number" id="variations" name="variations" value="5" min="1" max="20" required>
+        </div>
+
+        <div class="form-group">
+            <label for="digits_to_vary">Digits to Vary (1-6):</label>
+            <input type="number" id="digits_to_vary" name="digits_to_vary" value="3" min="1" max="6" required>
+        </div>
+
+        <div class="form-group">
+            <label for="source_file">Upload Source Numbers (Excel):</label>
+            <input type="file" id="source_file" name="source_file" accept=".xlsx,.xls" required>
+        </div>
+
+        <div class="form-group">
+            <label for="blacklist_file">Upload Blacklist (optional):</label>
+            <input type="file" id="blacklist_file" name="blacklist_file" accept=".xlsx,.xls">
+        </div>
+
+        <button type="submit">Generate Numbers</button>
+    </form>
+</body>
+</html>

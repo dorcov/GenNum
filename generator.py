@@ -1,5 +1,7 @@
-import random 
+import random
 import pandas as pd
+import argparse
+import sys
 
 OPERATOR_PREFIXES = {
     'Orange': ['60','61','62','63','68','69'],
@@ -81,10 +83,10 @@ def generate_number_variation(base_number, digits_to_vary, operator):
         
     return new_number
 
-def load_blacklist():
+def load_blacklist(blacklist_file):
     """Load blacklisted numbers from Excel"""
     try:
-        df_blacklist = pd.read_excel('blacklist.xlsx')
+        df_blacklist = pd.read_excel(blacklist_file)
         return set(df_blacklist['Phone'].astype(str).apply(clean_source_number))
     except FileNotFoundError:
         return set()
@@ -105,7 +107,7 @@ def create_seed_numbers(missing_operator):
             })
     return seeds
 
-def generate_variations(df_source, variations_per_number=5, digits_to_vary=3):
+def generate_variations(df_source, variations_per_number=5, digits_to_vary=3, blacklist_file=None):
     """Generate variations including missing operators"""
     
     # Find missing operators
@@ -123,7 +125,7 @@ def generate_variations(df_source, variations_per_number=5, digits_to_vary=3):
         df_source = pd.concat([df_source, df_seeds], ignore_index=True)
     
     # Load blacklist
-    blacklist = load_blacklist()
+    blacklist = load_blacklist(blacklist_file) if blacklist_file else set()
     
     # Clean source numbers with fixed function
     df_source['Phone'] = df_source['Phone'].apply(clean_source_number)
@@ -169,20 +171,27 @@ def generate_variations(df_source, variations_per_number=5, digits_to_vary=3):
     return df_combined.sample(frac=1).reset_index(drop=True)
 
 def main():
+    parser = argparse.ArgumentParser(description="Generate Phone Number Variations")
+    parser.add_argument('source_file', help="Path to the source Excel file containing phone numbers")
+    parser.add_argument('-b', '--blacklist_file', help="Path to the blacklist Excel file (optional)", default=None)
+    parser.add_argument('-v', '--variations', type=int, help="Variations per number", default=5)
+    parser.add_argument('-d', '--digits_to_vary', type=int, help="Number of digits to vary (1-6)", default=3)
+    parser.add_argument('-o', '--output_file', help="Path for the output Excel file", default='generated_numbers.xlsx')
+    
+    args = parser.parse_args()
+    
     try:
-        df_source = pd.read_excel('source_numbers.xlsx')
-        variations = int(input("Variations per number: "))
-        digits_to_vary = int(input("Number of digits to vary (1-6): "))
+        if not 1 <= args.digits_to_vary <= 6:
+            raise ValueError("Digits to vary must be between 1 and 6.")
         
-        if not 1 <= digits_to_vary <= 6:
-            raise ValueError("Must vary between 1 and 6 digits")
-            
-        df_result = generate_variations(df_source, variations, digits_to_vary)
-        df_result.to_excel('generated_numbers.xlsx', index=False)
-        print(f"Generated {len(df_result)} total numbers")
+        df_source = pd.read_excel(args.source_file)
+        df_result = generate_variations(df_source, args.variations, args.digits_to_vary, args.blacklist_file)
+        df_result.to_excel(args.output_file, index=False)
+        print(f"Generated {len(df_result)} total numbers. Saved to {args.output_file}.")
         
     except Exception as e:
         print(f"Error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file, flash
+from flask import Flask, request, render_template, send_file, flash, url_for
 import pandas as pd
 import io
 from generator import generate_variations
@@ -53,9 +53,9 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return f"Error 404: Page not found. <a href='{url_for('index')}'>Return to home</a>", 404
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     # Create required directories
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'css'), exist_ok=True)

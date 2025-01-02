@@ -1,14 +1,18 @@
-from flask import Flask, request, render_template, send_file, flash, url_for
+from flask import Flask, request, render_template, send_file, flash, url_for, send_from_directory
 import pandas as pd
 import io
 from generator import generate_variations
 import os
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 app.secret_key = 'your-secret-key-here'  # Add this line
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+@app.route('/style.css')
+def serve_css():
+    return send_from_directory('.', 'style.css', mimetype='text/css')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
